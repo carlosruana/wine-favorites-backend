@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "wines-426406",
+  "private_key_id": "2d14643d2f06b686752d574a7adf26ded952a503",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCk1Uo+lt1iNRG1\niyU7L5m0hX+pdW9ufzJOj0wHVRhKefYczvOp7F2QZ9kzSG04PxdY6GiQA1sXGM6X\n4pQe+xAonOcUdswZLIpVLDFOTHsoaU60muOii+M7/enn9u8GpL6GF+ur6FiojN5m\n/aLcXfpdBrDjZHC5yIhAccz/NePYJ6agd6K5kDhGrDwym8rSc7pF15F6bSfv1Keh\nP9yW4K/tROyd2pARoGwJRbLGE/0tZ+bfdUcYu9EUGpw/0eSOxI3kUH/ZzXWw7cAo\nYyED9YYHtt4PYUqmg4wgdyI8hCev/sYWhls9BPI2d0rRpOIMzlKseQy0BG3J2ulE\nkmvt40ELAgMBAAECggEADb+bRWSGAKar3HhHrwvFsUX1TlLKQZgrFQcPcLPLUThN\nAT14cMg99vPX16wx1/WDOATikSiGf4MFMFaow3tuGe/EYnOU4ICo5SPI1QlnYwkt\nlGja6yLp3YYh7W7Y+bU3YwM5wrP1jnwkIh5ZEt0P1enfSogv0tSEG4P3yk2vZxxS\nnNAJXIkGNzgeZZXIgLjNu8EzKT+Zqy6CZPnBtHokfMrkKeeBr74RRhQ5vKWRXckU\nndgarYbDdEoTljY5fHSNBrWBqJmnMZjXyRHI7FO2RcqXVS4dqb7aNHmQ2N3sEzG+\nitNXZ83qdBmE/zk1zOvHJo490eqQGa4GXwlLyMN78QKBgQDPvvB9bsX+N0Z9tcvk\nC7E4WOhCIS1zrdKAV5bnYg+XVRt1xNfy6xLTJ8A6sa4thME3FfgJLQ7Gszr0fiJD\n7mwYzaQAo+YH2SEifSmUG7QoQk1GiuWfrhrDeOQ2ZOhny84tGX8/hkI0KSe42HTJ\naCNaMsjSKRlrk/Qco8RfwLJhQwKBgQDLHqkHQvdudDIbMqMgNzx34JcBDjgnBbol\nQFFVk2zAiZRWUxX1htn6yNFEhgOGiYydEsdqRbakXCZkqfN0WpBeNOsEJXeKihJk\nuZ9VI/u+5JvqO9dPX4ptXQsjzUzvD7yPWHMToueKVT8IsHKowVFQoQZN3H9LQd59\n9oH0KhpgmQKBgQC9lrJgtlQokQdauCsvneAI3VJw71hMhqhhig3kceBqqjfaPV8a\niJ9wZomOxxJ+5fVysTDgJueiPHUkJWxd9FtgM2NlVi4aoXQUxobIbJP4XbGqHB48\noKY6F7ylS2exOhSZofg33+3RLnHaxmemWsxQh6Iv8WQKgka4UFhpTjE8gwKBgDcM\nzj7blXfoIhRg+vkmP0s2IXb1xZ493R9veRu6YwUjxIJI7nCm5bkkaCMsNxRlfyir\nCETzM/cDypwJu6PTT8FYkkGDbgysMyP9cwN+RyKLjv5Cza4DdN8DEpvXbnx0RWSM\nUlQGGL7TL8xJFipKiqFRowXDNvTMm2KERuBH8PIxAoGAU23lr5YWlxj3cBy8uNSK\nIDjGYZzbvUg4T+f0PobkO9G5zC7j5yyGYLFQaCKExYUEUKfI5T09B87Ajolx3kUh\ny0lhSkQDYxy8lGKa1weby1+Qp7phXiuMbg6fygdymRUGKk6B9dsVx9VKC3rnr/bu\nn5OG8UzNqXk0UC2uKxYasyI=\n-----END PRIVATE KEY-----\n",
+  "client_email": "wines-vision@wines-426406.iam.gserviceaccount.com",
+  "client_id": "109342052296480425363",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/wines-vision%40wines-426406.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
