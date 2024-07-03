@@ -1,16 +1,53 @@
-import { Schema, model, Document } from 'mongoose';
+import AWS from 'aws-sdk';
+import { v4 as uuidv4 } from 'uuid';
 
-interface IHistory extends Document {
-  imageUrl: string;
-  wineName: string;
-  uploadDate: Date;
+const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const TableName = 'History';
+
+export interface IHistory {
+    id?: string;
+    imageUrl: string;
+    wineName: string;
+    uploadDate?: string;
 }
 
-const HistorySchema = new Schema<IHistory>({
-  imageUrl: { type: String, required: true },
-  wineName: { type: String, required: true },
-  uploadDate: { type: Date, default: Date.now },
-});
+const History = {
+    async find(): Promise<IHistory[]> {
+        const params = {
+            TableName,
+            ScanIndexForward: false // Sort by uploadDate descending
+        };
+        const data = await dynamoDb.scan(params).promise();
+        return data.Items as IHistory[];
+    },
 
-const History = model<IHistory>('History', HistorySchema);
+    async findById(id: string): Promise<IHistory | null> {
+        const params = {
+            TableName,
+            Key: { id }
+        };
+        const data = await dynamoDb.get(params).promise();
+        return data.Item as IHistory | null;
+    },
+
+    async save(entry: IHistory): Promise<IHistory> {
+        entry.id = uuidv4();
+        entry.uploadDate = new Date().toISOString();
+        const params = {
+            TableName,
+            Item: entry
+        };
+        await dynamoDb.put(params).promise();
+        return entry;
+    },
+
+    async deleteById(id: string): Promise<void> {
+        const params = {
+            TableName,
+            Key: { id }
+        };
+        await dynamoDb.delete(params).promise();
+    }
+};
+
 export default History;

@@ -1,0 +1,13 @@
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+# Ignore environment variable files
+.env
+
+# Ignore Google Cloud credentials file
+wines-426406-2d14643d2f06.json
+
+ node_modules
