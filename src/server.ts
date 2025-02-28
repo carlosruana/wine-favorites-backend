@@ -1,16 +1,34 @@
+import express from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
+import wineRoutes from './routes/WineRoutes';
+import path from 'path';
+import { connectDB } from './db';
+
 dotenv.config();
 
-import app from './app';
+// Create the express app instance
+const app = express();
 
-const PORT = process.env.PORT || 5001;
-
-// Log environment variables to verify they are loaded
-console.log('AWS_ACCESS_KEY_ID:', process.env.AWS_ACCESS_KEY_ID);
-console.log('AWS_REGION:', process.env.AWS_REGION);
-console.log('AWS_SECRET_ACCESS_KEY:', process.env.AWS_SECRET_ACCESS_KEY);
-console.log('S3_BUCKET_NAME:', process.env.S3_BUCKET_NAME);
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+const port = process.env.PORT || 5000;
+// Connect to MongoDB before starting the server
+connectDB().then(() => {
+  // Use the port from environment variable, or default to 5000
+  const port = process.env.PORT || 5000;
+  
+  // Start the server after successful DB connection
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
 });
+
+app.use(cors());
+app.use(express.json());
+
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Use wine routes
+app.use(wineRoutes);
+
+export default app;

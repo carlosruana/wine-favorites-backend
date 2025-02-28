@@ -4,10 +4,16 @@
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 
-# Ignore environment variable files
-.env
 
 # Ignore Google Cloud credentials file
-wines-426406-2d14643d2f06.json
+/config/wines-vision.json
 
- node_modules
+node_modules/
+dist
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.vscode

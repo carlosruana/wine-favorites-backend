@@ -1,89 +1,77 @@
-import AWS from 'aws-sdk';
-import { v4 as uuidv4 } from 'uuid';
+import { ObjectId, Collection } from 'mongodb';
+import { db } from "../db";
 
-const dynamoDb = new AWS.DynamoDB.DocumentClient();
-const TableName = 'Wines';
+let winesCollection: Collection<IWine> | null = null;
 
 export interface IWine {
-    id?: string;
+    _id?: ObjectId;
     name: string;
     rating: number;
     comments: string;
     type: string;
     favorite?: boolean;
+    image?: Buffer;
 }
 
-const Wine = {
-    async find(): Promise<IWine[]> {
-        const params = {
-            TableName
-        };
-        const data = await dynamoDb.scan(params).promise();
-        return data.Items as IWine[];
-    },
-
-    async findById(id: string): Promise<IWine | null> {
-        const params = {
-            TableName,
-            Key: { id }
-        };
-        const data = await dynamoDb.get(params).promise();
-        return data.Item as IWine | null;
-    },
-
-    async findOne(query: { name: string }): Promise<IWine | null> {
-        const params = {
-            TableName,
-            FilterExpression: '#name = :name',
-            ExpressionAttributeNames: {
-                '#name': 'name'
-            },
-            ExpressionAttributeValues: {
-                ':name': query.name
-            }
-        };
-        const data = await dynamoDb.scan(params).promise();
-        return data.Items && data.Items.length > 0 ? (data.Items[0] as IWine) : null;
-    },
-
-    async save(wine: IWine): Promise<IWine> {
-        wine.id = uuidv4();
-        const params = {
-            TableName,
-            Item: wine
-        };
-        await dynamoDb.put(params).promise();
-        return wine;
-    },
-
-    async update(id: string, updates: Partial<IWine>): Promise<IWine> {
-        const params = {
-            TableName,
-            Key: { id },
-            UpdateExpression: 'set #favorite = :favorite',
-            ExpressionAttributeNames: {
-                '#favorite': 'favorite'
-            },
-            ExpressionAttributeValues: {
-                ':favorite': updates.favorite
-            },
-            ReturnValues: 'UPDATED_NEW'
-        };
-        const data = await dynamoDb.update(params).promise();
-        return { id, ...updates, ...data.Attributes } as IWine;
-    },
-
-    async findFavorites(): Promise<IWine[]> {
-        const params = {
-            TableName,
-            FilterExpression: 'favorite = :favorite',
-            ExpressionAttributeValues: {
-                ':favorite': true
-            }
-        };
-        const data = await dynamoDb.scan(params).promise();
-        return data.Items as IWine[];
+export default class Wine {
+    // Initialize wines collection once
+    static async initialize() {
+        if (!winesCollection) {
+            winesCollection = db.collection<IWine>('wines');
+            console.log("Wines collection initialized");
+        }
     }
-};
 
-export default Wine;
+    // Ensure the collection is initialized before use
+    private static async ensureInitialized() {
+        if (!winesCollection) {
+            await this.initialize();
+        }
+    }
+
+    // Getter to ensure winesCollection is always initialized
+    private static get collection(): Collection<IWine> {
+        if (!winesCollection) {
+            throw new Error("Wine collection has not been initialized!");
+        }
+        return winesCollection;
+    }
+
+    static async find(): Promise<IWine[]> {
+        await this.ensureInitialized();
+        return await this.collection.find().toArray();
+    }
+
+    static async findById(id: string): Promise<IWine | null> {
+        await this.ensureInitialized();
+        return await this.collection.findOne({ _id: new ObjectId(id) });
+    }
+
+    static async findOne(query: { name: string }): Promise<IWine | null> {
+        await this.ensureInitialized();
+        return await this.collection.findOne({ name: query.name });
+    }
+
+    static async save(wine: IWine): Promise<IWine> {
+        await this.ensureInitialized();
+        const result = await this.collection.insertOne(wine);
+        return { ...wine, _id: result.insertedId };
+    }
+
+    static async update(id: string, updates: Partial<IWine>): Promise<IWine | null> {
+        await this.ensureInitialized();
+        const result = await this.collection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updates }
+        );
+        if (result.matchedCount === 0) {
+            return null; // Wine not found
+        }
+        return { ...updates, _id: new ObjectId(id) } as IWine;
+    }
+
+    static async findFavorites(): Promise<IWine[]> {
+        await this.ensureInitialized();
+        return await this.collection.find({ favorite: true }).toArray();
+    }
+}

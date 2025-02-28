@@ -1,12 +1,13 @@
 import axios from 'axios';
-import cheerio from 'cheerio';
+import { load } from 'cheerio';
 
 export const scrapeVivino = async (wineName: string) => {
   const url = `https://www.vivino.com/search/wines?q=${encodeURIComponent(wineName)}`;
   
   try {
     const { data } = await axios.get(url);
-    const $ = cheerio.load(data);
+	console.log(load);
+    const $ = load(data);
     
     const results: Array<{
       name: string;
