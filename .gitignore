@@ -8,8 +8,8 @@
 # Ignore Google Cloud credentials file
 /config/wines-vision.json
 
+dist/
 node_modules/
-dist
 .DS_Store
 .env
 .env.local

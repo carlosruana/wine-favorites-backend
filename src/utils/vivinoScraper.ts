@@ -6,7 +6,6 @@ export const scrapeVivino = async (wineName: string) => {
   
   try {
     const { data } = await axios.get(url);
-	console.log(load);
     const $ = load(data);
     
     const results: Array<{

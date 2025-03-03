@@ -12,6 +12,7 @@ const client = new vision.ImageAnnotatorClient();
 
 export const getWines = async (req: Request, res: Response<IWine[] | { message: string }>) => {
   try {
+	console.log("getting wines");
     const wines = await Wine.find();
     res.status(200).json(wines);
   } catch (error) {

@@ -14,12 +14,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scrapeVivino = void 0;
 const axios_1 = __importDefault(require("axios"));
-const cheerio_1 = __importDefault(require("cheerio"));
+const cheerio_1 = require("cheerio");
 const scrapeVivino = (wineName) => __awaiter(void 0, void 0, void 0, function* () {
     const url = `https://www.vivino.com/search/wines?q=${encodeURIComponent(wineName)}`;
     try {
         const { data } = yield axios_1.default.get(url);
-        const $ = cheerio_1.default.load(data);
+        const $ = (0, cheerio_1.load)(data);
         const results = [];
         // Usar el selector actualizado para las tarjetas de vino
         $('.search-results-list .default-wine-card').each((_, element) => {
