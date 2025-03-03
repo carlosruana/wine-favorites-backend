@@ -3,7 +3,6 @@ import { db } from "../db";
 
 let winesCollection: Collection<IWine> | null = null;
 
-// wine interface
 export interface IWine {
     _id?: ObjectId;
     name: string;
