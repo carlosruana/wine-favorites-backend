@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import Wine, { IWine } from '../models/Wine';
 import History, { IHistory } from '../models/History';
-import WineImage, { IWineImage } from '../models/WineImage';
+//import WineImage, { IWineImage } from '../models/WineImage';
 import vision from '@google-cloud/vision';
 import { scrapeVivino } from '../utils/vivinoScraper';
 import { Buffer } from 'buffer';
@@ -10,16 +10,67 @@ import busboy from 'busboy';
 // Configure Google Vision client
 const client = new vision.ImageAnnotatorClient();
 
-export const getWines = async (req: Request, res: Response<IWine[] | { message: string }>) => {
+export type ReturnedWine = Omit<IWine, 'image'> & { image: string | null };
+
+export const getWines = async (_req: Request, res: Response<ReturnedWine[] | { message: string }>) => {
   try {
+	console.log("Getting wines");
     const wines = await Wine.find();
-    res.status(200).json(wines);
+
+    const winesWithImageUrls = wines.map(wine => ({
+      ...wine,
+      image: wine.image
+        ? `${process.env.BASE_URL}/wines/${wine._id}/image`
+        : null,
+    }));
+	console.log("Wines with image URLs: ", winesWithImageUrls);
+
+    res.status(200).json(winesWithImageUrls);
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
   }
 };
 
-export const addWine = async (req: Request, res: Response<IWine | { message: string }>) => {
+export const getWineImage = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    console.log(`Fetching wine with ID: ${id}`);
+    const wine = await Wine.findById(id);
+    if (!wine) {
+      console.log('Wine not found');
+      return res.status(404).json({ message: 'Wine not found' });
+    }
+    if (!wine.image || !wine.mimeType) {
+      console.log('Image or MIME type missing');
+      return res.status(404).json({ message: 'Image not found' });
+    }
+
+    console.log(`Serving image for wine ID: ${id}`);
+    const imageBuffer = Buffer.from(wine.image.buffer); // Convert MongoDB Binary to Buffer
+    res.set('Content-Type', wine.mimeType);
+    res.send(imageBuffer); // Send the binary image data
+  } catch (error) {
+    console.error('Error fetching wine image:', error);
+    res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
+  }
+};
+
+export const deleteWine = async (req: Request, res: Response<{ message: string }>) => {
+  const { id } = req.params;
+  try {
+    const wine = await Wine.findById(id);
+    if (!wine) {
+      return res.status(404).json({ message: 'Wine not found' });
+    }
+
+    await Wine.deleteOneById({ id: id }); // Delete the wine by ID
+    res.status(200).json({ message: 'Wine deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
+  }
+};
+
+/*export const addWine = async (req: Request, res: Response<IWine | { message: string }>) => {
   const { name, rating, comments, type, imageBase64 } = req.body;
   try {
     // Save the wine directly using the Wine.save() method
@@ -37,7 +88,7 @@ export const addWine = async (req: Request, res: Response<IWine | { message: str
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
   }
-};
+};*/
 
 export const getWineByName = async (req: Request, res: Response<IWine | { message: string }>) => {
   const { name } = req.params;
@@ -66,17 +117,17 @@ export const toggleFavorite = async (req: Request, res: Response<IWine | { messa
 export const getFavorites = async (req: Request, res: Response<IWine[] | { message: string }>) => {
   try {
 	console.log("Getting favorite wines");
-    const favoriteWines = await Wine.find();
+    const favoriteWines = await Wine.findFavorites();
     res.status(200).json(favoriteWines);
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
   }
 };
 
-export const getHistory = async (req: Request, res: Response<IHistory[] | { message: string }>) => {
+export const getHistory = async (req: Request, res: Response<IWine[] | { message: string }>) => {
   try {
-    const history = await History.find();
-    res.status(200).json(history);
+    const wines = await Wine.find();
+    res.status(200).json(wines);
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
   }
@@ -99,6 +150,14 @@ export const analyzeAndSaveImage = async (req: Request, res: Response) => {
       try {
         const imageBuffer = Buffer.concat(buffers);
 
+		// Log the MIME type for debugging
+        console.log(`Uploaded file MIME type: ${mimeType}`);
+
+        // Ensure the file is an image
+        if (!mimeType.startsWith('image/')) {
+          return res.status(400).json({ message: 'Uploaded file is not an image' });
+        }
+
         // Analyze image with Google Vision API
         console.log("Analyzing image with Google Vision...");
         const [result] = await client.textDetection(imageBuffer);
@@ -113,17 +172,19 @@ export const analyzeAndSaveImage = async (req: Request, res: Response) => {
         console.log(`Detected file info: ${info}`);
 
         // Create wine image object
-        const wineImage: IWineImage = {
-          filename: filename,
-          contentType: mimeType,
+        const wineImage: IWine = {
+          name: detectedWineName || filename,
+          //contentType: mimeType,
           image: imageBuffer,
-          wineName: detectedWineName,
+		  mimeType,
+          //wineName: detectedWineName,
           uploadDate: new Date(),
+		  favorite: false
         };
 
-        await WineImage.save(wineImage);
+        await Wine.save(wineImage);
 
-        res.status(200).json({ wineName: detectedWineName });
+        res.status(200).json({ wineName: detectedWineName || filename });
       } catch (error) {
         console.error("Error processing image:", error);
         res.status(500).json({ message: "Error analyzing image" });
@@ -138,6 +199,7 @@ export const getWineDetails = async (req: Request, res: Response) => {
   const { name } = req.params;
   try {
     const wineInfo = await scrapeVivino(name);
+	console.log("Wine info: ", wineInfo);
     if (wineInfo.length === 0) {
       return res.status(404).json({ message: 'Wine not found' });
     }

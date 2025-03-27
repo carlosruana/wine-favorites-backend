@@ -1,4 +1,4 @@
-import { ObjectId, Collection } from 'mongodb';
+import { ObjectId, Collection, DeleteResult } from 'mongodb';
 import { db } from "../db";
 
 let winesCollection: Collection<IWine> | null = null;
@@ -6,11 +6,12 @@ let winesCollection: Collection<IWine> | null = null;
 export interface IWine {
     _id?: ObjectId;
     name: string;
-    rating: number;
-    comments: string;
-    type: string;
-    favorite?: boolean;
+    rating?: number;
+    comments?: string;
+    mimeType: string;
+    favorite: boolean;
     image?: Buffer;
+	uploadDate: Date;
 }
 
 export default class Wine {
@@ -50,6 +51,11 @@ export default class Wine {
     static async findOne(query: { name: string }): Promise<IWine | null> {
         await this.ensureInitialized();
         return await this.collection.findOne({ name: query.name });
+    }
+
+    static async deleteOneById(query: { id: string }): Promise<DeleteResult> {
+        await this.ensureInitialized();
+        return await this.collection.deleteOne({ _id: new ObjectId(query.id) });
     }
 
     static async save(wine: IWine): Promise<IWine> {
