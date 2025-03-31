@@ -12,6 +12,7 @@ export interface IWine {
     favorite: boolean;
     image?: Buffer;
 	uploadDate: Date;
+	userId: string;
 }
 
 export default class Wine {
@@ -38,9 +39,9 @@ export default class Wine {
         return winesCollection;
     }
 
-    static async find(): Promise<IWine[]> {
+    static async find(query: Partial<IWine> = {}): Promise<IWine[]> {
         await this.ensureInitialized();
-        return await this.collection.find().toArray();
+        return await this.collection.find(query).toArray();
     }
 
     static async findById(id: string): Promise<IWine | null> {

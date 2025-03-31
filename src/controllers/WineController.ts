@@ -6,16 +6,18 @@ import vision from '@google-cloud/vision';
 import { scrapeVivino } from '../utils/vivinoScraper';
 import { Buffer } from 'buffer';
 import busboy from 'busboy';
+import { AuthRequest } from '../middleware/auth';
 
 // Configure Google Vision client
 const client = new vision.ImageAnnotatorClient();
 
 export type ReturnedWine = Omit<IWine, 'image'> & { image: string | null };
 
-export const getWines = async (_req: Request, res: Response<ReturnedWine[] | { message: string }>) => {
+export const getWines = async (req: AuthRequest, res: Response<ReturnedWine[] | { message: string }>) => {
   try {
-	console.log("Getting wines");
-    const wines = await Wine.find();
+	const userId = req.userId; // Extract userId from the JWT token
+	console.log(`Getting wines for user ID: ${userId}`);
+    const wines = await Wine.find({ userId });
 
     const winesWithImageUrls = wines.map(wine => ({
       ...wine,
@@ -55,12 +57,17 @@ export const getWineImage = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteWine = async (req: Request, res: Response<{ message: string }>) => {
+export const deleteWine = async (req: AuthRequest, res: Response<{ message: string }>) => {
   const { id } = req.params;
+  const userId = req.userId; // Extract userId from the JWT token
   try {
     const wine = await Wine.findById(id);
     if (!wine) {
       return res.status(404).json({ message: 'Wine not found' });
+    }
+
+	if (wine.userId !== userId) {
+      return res.status(403).json({ message: 'Not authorized to delete this wine' });
     }
 
     await Wine.deleteOneById({ id: id }); // Delete the wine by ID
@@ -133,8 +140,11 @@ export const getHistory = async (req: Request, res: Response<IWine[] | { message
   }
 };
 
-export const analyzeAndSaveImage = async (req: Request, res: Response) => {
-  console.log("Received image upload request");
+export const analyzeAndSaveImage = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId; // Extract userId from the JWT token
+  if (!userId) {
+    return res.status(401).json({ message: 'Not authorized' });
+  }
   
   const bb = busboy({ headers: req.headers });
 
@@ -179,7 +189,8 @@ export const analyzeAndSaveImage = async (req: Request, res: Response) => {
 		  mimeType,
           //wineName: detectedWineName,
           uploadDate: new Date(),
-		  favorite: false
+		  favorite: false,
+		  userId
         };
 
         await Wine.save(wineImage);

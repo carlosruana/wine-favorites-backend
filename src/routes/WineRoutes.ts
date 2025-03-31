@@ -1,7 +1,11 @@
 import express from 'express';
+import { protect } from "../middleware/auth";
 import { getWines,/* addWine,*/ getWineImage, deleteWine, getWineByName, toggleFavorite, getFavorites, getHistory, analyzeAndSaveImage, getWineDetails, deleteWineFromHistory } from '../controllers/WineController';
 
 const router = express.Router();
+
+// Protect all routes
+router.use(protect);
 
 // Wine Routes
 router.get('/wines', getWines); // Get all wines

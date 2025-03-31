@@ -40,12 +40,6 @@ export const scrapeVivino = async (wineName: string) => {
       const rating = $(element).find('.average__number').text().trim();
       const price = $(element).find('.wine-price-value').text().trim();
 
-	  console.log(name);
-	  console.log(link);
-	  console.log(image);
-	  console.log(origin);
-	  console.log(rating);
-	  console.log(price);
       if (name && link && image && origin && rating && price) {
         results.push({
           name,
