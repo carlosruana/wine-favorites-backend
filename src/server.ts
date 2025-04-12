@@ -37,8 +37,14 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Use login routes
 app.use(loginRoutes);
 
-// Use wine routes
+// Do not let server to sleep
+app.get('/ping', (req, res) => {
+  res.status(200).send('pong');
+});
+
+// Use wine protected routes
 app.use(wineRoutes);
+
 
 
 export default app;
