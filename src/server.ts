@@ -24,10 +24,24 @@ connectDB().then(() => {
   });
 });
 
-app.use(cors({
-  origin: "http://localhost:3000", // Allow frontend domain
-  credentials: true, // Allow cookies and authentication headers
-}));
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? ['https://topwines.vercel.app']
+  : ['http://localhost:3000', 'http://localhost:3001'];
+
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (arg0: Error | null, arg1: boolean | undefined) => void) => {
+    if (!origin || allowedOrigins.includes(origin)) { // Allow undefined origin or check if the origin is in the allowed list
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'), false);
+    }
+  },
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  allowedHeaders: 'Content-Type, Authorization',
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
