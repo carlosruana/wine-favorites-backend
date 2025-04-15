@@ -5,7 +5,8 @@ export interface IHistory {
     _id?: ObjectId;
     wineName: string;
     uploadDate?: string;
-    image?: Buffer;
+    image: string;  // Changed from Buffer to string since we're storing URLs
+    userId: string;
 }
 
 export default class History {
@@ -33,19 +34,21 @@ export default class History {
         return this._historyCollection;
     }
 
-    // Get all history entries
-    static async find(): Promise<IHistory[]> {
+    // Get all history entries for a user
+    static async find(userId?: string): Promise<IHistory[]> {
         await this.ensureInitialized();
+        const query = userId ? { userId } : {};
         const result: WithId<IHistory>[] = await this.collection
-            .find({}, { projection: { _id: 1, wineName: 1, uploadDate: 1, image: 1 } }) // Selecting necessary fields
+            .find(query, { projection: { _id: 1, wineName: 1, uploadDate: 1, image: 1, userId: 1 } })
             .sort({ uploadDate: -1 })
             .toArray();
         
         return result.map(history => ({
-            _id: history._id, // Keep _id as ObjectId
+            _id: history._id,
             wineName: history.wineName,
             uploadDate: history.uploadDate,
             image: history.image,
+            userId: history.userId,
         }));
     }
 
@@ -54,7 +57,7 @@ export default class History {
         await this.ensureInitialized();
         const result: WithId<IHistory> | null = await this.collection.findOne(
             { _id: new ObjectId(id) },
-            { projection: { _id: 1, wineName: 1, uploadDate: 1, image: 1 } }
+            { projection: { _id: 1, wineName: 1, uploadDate: 1, image: 1, userId: 1 } }
         );
         if (!result) return null;
         return {
@@ -62,6 +65,7 @@ export default class History {
             wineName: result.wineName,
             uploadDate: result.uploadDate,
             image: result.image,
+            userId: result.userId,
         };
     }
 

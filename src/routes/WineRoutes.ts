@@ -1,6 +1,6 @@
 import express from 'express';
 import { protect } from "../middleware/auth";
-import { getWines,/* addWine,*/ getWineImage, deleteWine, getWineByName, toggleFavorite, getFavorites, getHistory, analyzeAndSaveImage, getWineDetails, deleteWineFromHistory } from '../controllers/WineController';
+import { getWines,/* addWine,*/ getWineImage, deleteWine, getWineByName, toggleFavorite, getFavorites, getHistory, analyzeAndSaveImage, getWineDetails, deleteWineFromHistory, addToHistory } from '../controllers/WineController';
 
 const router = express.Router();
 
@@ -20,8 +20,9 @@ router.post('/wine-favorites/:id', toggleFavorite); // Toggle the favorite statu
 
 
 // Wine History Routes
-router.get('/history', getWines); // Get wine history
-router.delete('/history/:id', deleteWine); // Delete a wine from the history
+router.get('/history', getHistory); // Get wine history
+router.post('/history', addToHistory); // Add to history
+router.delete('/history/:id', deleteWineFromHistory); // Delete from history
 
 // Wine Image Analysis
 router.post('/image-analysis', analyzeAndSaveImage); // Analyze and save image

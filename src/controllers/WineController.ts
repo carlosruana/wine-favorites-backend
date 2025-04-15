@@ -131,11 +131,17 @@ export const getFavorites = async (req: Request, res: Response<IWine[] | { messa
   }
 };
 
-export const getHistory = async (req: Request, res: Response<IWine[] | { message: string }>) => {
+export const getHistory = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
   try {
-    const wines = await Wine.find();
-    res.status(200).json(wines);
+    if (!userId) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const history = await History.find(userId);
+    res.status(200).json(history);
   } catch (error) {
+    console.error('Error fetching history:', error);
     res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
   }
 };
@@ -229,6 +235,30 @@ export const deleteWineFromHistory = async (req: Request, res: Response) => {
     await History.deleteById(id); // Use deleteById instead of findByIdAndDelete
     res.status(200).json({ message: 'History entry deleted' });
   } catch (error) {
+    res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
+  }
+};
+
+export const addToHistory = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+  const { wineName, image } = req.body;
+
+  try {
+    if (!userId) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const historyEntry: IHistory = {
+      wineName,
+      image,
+      uploadDate: new Date().toISOString(), // Convert Date to ISO string
+      userId
+    };
+
+    await History.save(historyEntry);
+    res.status(201).json({ message: 'Added to history successfully' });
+  } catch (error) {
+    console.error('Error adding to history:', error);
     res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
   }
 };
